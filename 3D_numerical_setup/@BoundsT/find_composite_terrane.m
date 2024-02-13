@@ -25,6 +25,8 @@ if strcmp(obj.(Boundary){2},'none')
     dep_var = const;
 elseif strcmp(obj.(Boundary){2},'Circular')
     dep_var = obj.circumference_margin(Boundary,ind_var);
+elseif strcmp(obj.(Boundary){2},'Sigmoid')
+    dep_var = obj.sigmoid_margin(Boundary,ind_var);
 else
     error('Unknown boundary type, spell it correctly')
 end

@@ -124,7 +124,7 @@ class Data_Base():
         itest = 0 
         for it in range(self.n_test-1):
             test_name = self.Tests_Name[it]
-            if test_name[1] == 'TSD2':
+            if test_name[1] != 'TSD2_HC_3':
                 path_save_b = os.path.join(path_save,test_name[1])
                 if not os.path.isdir(path_save_b):
                     os.mkdir(path_save_b)
@@ -190,6 +190,7 @@ class Data_Base():
                 self.dt[itest,1]    = dtB 
                 self.dt[itest,2]    = dtC 
                 ipic = 0 
+                ASCI_time_Vec(test.time,test_name,path_save_b)
                 for i in range(len(test.time)-1):
                     ASCI_FILE_ALT(test.FS,ipic,test.time[ipic],test_name,path_save_b,test.C)
                     ipic+=1 
@@ -209,7 +210,7 @@ class Data_Base():
                 
                 scale = (1000*100)/1e6
                 
-                label = Label('$x$, [$km$]','$y$, [$km$]','$Uplift rate$',r'${\dot{dH}} [\frac{cm}{yrs}]$','yes','Uplift',[30,90])
+                label = Label('$x$, [$km$]','$y$, [$km$]','$Uplift rate$',r'${\dot{dH}} [\frac{mm}{yrs}]$','yes','Uplift',[30,90])
                 _plot_Uplift([test.time[i1], test.time[i2]],((dH_A)/dtA)*scale,test_name[1],test.C,path_save_c,'Uplift_r','cmc.lapaz',label,'Geometric')
                 _plot_Uplift([test.time[i1]-2, test.time[i2]],((dH_B)/dtB)*scale,test_name[1],test.C,path_save_c,'Uplift_r','cmc.lapaz',label,'2Myr')
                 _plot_Uplift([0.5, test.time[i2]],((dH_C/dtC)*scale),test_name[1],test.C,path_save_c,'Uplift_r','cmc.lapaz',label,'Beginning')
@@ -218,11 +219,11 @@ class Data_Base():
                 
                 label = Label('$x$, [$km$]','$y$, [$km$]','$none$',r'$\bar{\dot{\varepsilon}}_{II}$,[$\frac{1}{s}$]','yes','Average lithospheric strain rate',[30,90])
 
-           #     _plot_2D_surface(test.time,test.FS,it,test.C,path_save_c,'eps','cmc.devon',label)
+                _plot_2D_surface(test.time,test.FS,it,test.C,path_save_c,'eps','cmc.devon',label)
 
                 label = Label('$x$, [$km$]','$y$, [$km$]','$none$',r'$H$,[$km$]','no','Topography',[5,95])
 
-           #     _plot_2D_surface(test.time,test.FS,it,test.C,path_save_c,'H','cmc.oleron',label)
+                _plot_2D_surface(test.time,test.FS,it,test.C,path_save_c,'H','cmc.oleron',label)
 
                 # Delete the variable and start all over again. 
             itest = itest+1
@@ -243,7 +244,16 @@ class Data_Base():
                                 r'$\bar{T}^{S}$ $[^{\circ}C]$')
         fields = ['Avolume','detachment_velocity','Temp','StressLimit']
         _scatter_plot_(self,path_save,label_s,fields,'Average_velocity_global_dataset')
-    
+        markers = ["d","o","s","P"]
+        label_s = label_scatter(r'$\bar{v}_{tearing}$ $[\frac{cm}{yr}]$',
+                                r'$\bar{\frac{dH}{dt}},$mm/yrs$',
+                                r'Average tearing velocity',
+                                markers
+                                ,'yes',
+                                'cmc.bilbao',
+                                r'$\bar{T}^{S}$ $[^{\circ}C]$')
+        fields = ['detachment_velocity','Uplift_rate','Temp','StressLimit']
+        _scatter_plot_(self,path_save,label_s,fields,'Average_velocity_global_dataset')
         
 
 
@@ -545,7 +555,10 @@ def  _scatter_plot_(Data:Data_Base,path_save:str,label_scatter:label_scatter,fie
     fg = figure(figsize=(15*cm, 15*cm))
     ax0 = fg.gca()
     x =  eval(x_f,globals(),Data.__dict__)
-    y =  eval(y_f,globals(),Data.__dict__)
+    if y_f == 'Uplift_rate':
+        du =  eval('uplift',globals(),Data.__dict__)*1000*1000
+        dt = eval('uplift',globals(),Data.__dict__)*1e6
+        y  = du[:,0]/dt[:,0]
    # if label_scatter.log == 'yes':
         #y = np.log10(y)
    
@@ -555,8 +568,8 @@ def  _scatter_plot_(Data:Data_Base,path_save:str,label_scatter:label_scatter,fie
     for im in range(len(m_u)):
         plt.scatter(x[m==m_u[im]],y[m==m_u[im]],60,z[m==m_u[im]],marker=label_scatter.markers[im],cmap = label_scatter.colormap,edgecolors='k')
         
-    cbar = fg.colorbar(s, ax=ax0,orientation='horizontal',extend="both",label=label_scatter.cbar_label)
-    s.set_clim([820,np.max(z)])
+    cbar = fg.colorbar( ax=ax0,orientation='horizontal',extend="both",label=label_scatter.cbar_label)
+    ax0.set_clim([820,np.max(z)])
     cbar.vmin = 820 
     cbar.vmax = np.max(z)
     ax0.tick_params(axis='both', which='major', labelsize=14)
@@ -651,3 +664,34 @@ def ASCI_FILE_ALT(S,ipic,t_cur,Test_Name,ptsave,C:C):
     np.savetxt(f, np.transpose(S),fmt='%.6f', delimiter=' ', newline = '\n') 
     f.close()
     print('Free surface data of the timestep %d, has been printed' %(ipic))
+    
+def ASCI_time_Vec(time,Test_Name,ptsave):
+            
+    """
+    Write a simple ascii file for the post processing of the free surface dat
+    This is for the the free surface data, later on I will dedicate a bit of 
+    more time on the usage of the passive tracers.     
+    """
+    file_name = 'Time_Vector'+'__'+Test_Name[1]+'.txt'
+    
+    ptsave_b=os.path.join(ptsave,'DataBase_FS')
+    if not os.path.isdir(ptsave_b):
+        os.mkdir(ptsave_b)
+    
+    filename = os.path.join(ptsave_b,file_name)
+    dt = np.diff(time)
+    dt_s = 0.0*time
+    dt_s[1:]=dt[:]
+    S        = np.array([time,dt_s])
+
+    if(os.path.isfile(filename)):
+        os.remove(filename)
+    f = open(filename, 'a+')
+    f.write('########################################\n')
+    f.write('Time_Vector\n')
+    f.write('time dt\n')
+    f.write('  [Myrs],[Myrs]\n')
+    f.write('########################################\n')
+    f.write('\n')
+    np.savetxt(f, np.transpose(S),fmt='%.6f', delimiter=' ', newline = '\n') 
+    f.close()

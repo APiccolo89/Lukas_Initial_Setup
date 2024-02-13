@@ -24,8 +24,13 @@ else
     B = A;
 end
 
-if strcmp(data_boundary{2},'Circular')
-    dx  = obj.circumference_margin(Boundary,B.Ypart(:));
+if strcmp(data_boundary{2},'Circular')|| strcmp(data_boundary{2},'Sigmoid') 
+    if strcmp(data_boundary{2},'Circular')
+        dx  = obj.circumference_margin(Boundary,B.Ypart(:));
+    elseif strcmp(data_boundary{2},'Sigmoid') 
+        dx = obj.sigmoid_margin(Boundary,B.Ypart(:));
+    end
+    
     [loc1, ~] = find(tril(data_boundary{1} == data_boundary{1}', -1)); % find the main boundary.
     % The main boundary is the coordinate that has the same value in
     % data_boundary.
@@ -37,7 +42,7 @@ if strcmp(data_boundary{2},'Circular')
         ya = data_boundary{1}(2);
         yb = data_boundary{1}(4);
     end
-    if strcmp(Boundary,'A')||strcmp(Boundary,'D') % in case of A and B, you need to increase the coordinate
+    if strcmp(Boundary,'A')||strcmp(Boundary,'B') % in case of A and B, you need to increase the coordinate
         dx = +dx;
     else
         dx = -dx;

@@ -80,7 +80,9 @@ classdef BoundsT
          % Arc Circumference like terrane
          [Size,CC] = modify_terrane_limits(obj,R,arc_length,Boundary,c)
          [obj] = Create_arc_circumference_margin(obj,R,Boundary,arcLength) 
+         [obj] = Create_Sigmoid_margin(obj,Boundary,x0,B,v,K1,K2)
          [y] = circumference_margin(obj,Boundary,x) % Find the coordinate of the boundary
+         [y] = sigmoid_margin(obj,Boundary,x) % Find the coordinate of the boundary
          [s] = arc_length_CB(obj,x,y,Boundary)      % For a given y and x -> find the arc_length
          [B] = transform_coordinate(obj,A,Boundary,theta) % Transform the local coordinate system as such that within the area of the boundary the coordinate are transformed. 
          [s] = compute_arc_length_circle(obj,x,Boundary); % Compute per each x,y => the length 
