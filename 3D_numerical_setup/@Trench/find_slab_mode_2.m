@@ -10,18 +10,20 @@ data_boundary = obj.Boundary.(Boundary);
 %Select the boundary = limits of the boundary
 [loc1, ~] = find(tril(data_boundary{1} == data_boundary{1}', -1)); % find the main boundary.
 if rem(loc1,2)==0
-    ya = data_boundary{1}(1);
-    yb = data_boundary{1}(3);
+    yab = [data_boundary{1}(1),data_boundary{1}(3)];
+    ya = min(yab);
+    yb = max(yab);
     xc = data_boundary{1}(2);
 else
-    ya = data_boundary{1}(2);
-    yb = data_boundary{1}(4);
+    yab = [data_boundary{1}(1),data_boundary{1}(3)];
+    ya = min(yab);
+    yb = max(yab);
     xc = data_boundary{1}(3);
 
 end
 % Restrict our research to the point the t ARE WORTH TO LOOK. You do not
 % find God in a Casino, but in church.
-C      = [xc,0.0-obj.R(2)]; % center of the curvature
+C      = [0.0,0.0-obj.R(2)]; % center of the curvature
 dl = obj.L0./obj.nseg;
 % Spell out the surfaces
 T = obj.Slab_surface.Top; % Top surface
@@ -34,9 +36,9 @@ WZ = obj.Slab_surface.WZ_surf;
 
 % Select better the area of the chosen one
 if ~strcmp(Weak_Slab,'Weak')
-ind = x>=C(1) & x(:)<=max(T(:,1)) & z(:)>=min(B(:,2)) & z(:)<=1.0 & y>ya & y<yb;
+    ind = x>=C(1) & x(:)<=max(T(:,1)) & z(:)>=min(B(:,2)) & z(:)<=1.0 & y>ya & y<yb;
 else
-ind = x>=C(1) & x(:)<=max(WZ(:,1)) & z(:)>=obj.Decoupling_depth(1) & y>ya & y<yb;
+    ind = x>=C(1) & x(:)<=max(WZ(:,1)) & z(:)>=obj.Decoupling_depth(1) & y>ya & y<yb;
 end
 
 
@@ -158,23 +160,28 @@ if ~strcmp(obj.length_continent{2},'none')
     cs(in==1)=1.0;
 else
     Points = obj.Subducted_crust_L;
+    
+    if ~isempty(Points)
 
-    Pl(1)     = Points(1);
+        Pl(1)     = Points(1);
 
-    Pl(2)     = Points(3);
+        Pl(2)     = Points(3);
 
-    Pl(3)     = Points(5);
+        Pl(3)     = Points(5);
 
-    Pd(1)     = Points(2);
+        Pd(1)     = Points(2);
 
-    Pd(2)     = Points(4);
+        Pd(2)     = Points(4);
 
-    Pd(3)     = Points(6);
+        Pd(3)     = Points(6);
 
-    [in,~] = inpolygon(ls,ds,Pl,Pd);
+        [in,~] = inpolygon(ls,ds,Pl,Pd);
 
-    cs(in==1)=1.0;
+        cs(in==1)=1.0;
+        
+        continent(ind==1) = cs; 
 
+    end
     
 end
 % Fill up the main portion 
@@ -182,7 +189,6 @@ d_slab(ind==1) = ds;
 
 l_slab(ind==1) = ls;
 
-continent(ind==1) = cs; 
 
 % Correct Phase and Temperature 
 

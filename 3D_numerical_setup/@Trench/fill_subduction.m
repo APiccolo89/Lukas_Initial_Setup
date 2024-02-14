@@ -14,9 +14,13 @@ for ib = 1:numel(boundary_list)
         ya = obj.Boundary.(boundary_list{ib}){1}(1);
         yb = obj.Boundary.(boundary_list{ib}){1}(3);
     end
-     
-    B.Length_along(B.Ypart>=ya & B.Ypart<=yb) = obj.Boundary.compute_arc_length_circle(B.Ypart(B.Ypart>=ya & B.Ypart<=yb),obj.Boundaries_list{ib});
-
+    if strcmp(obj.Boundary.(obj.Boundaries_list{ib}){2},'none') == 0
+        B.Length_along(B.Ypart>=ya & B.Ypart<=yb) = obj.Boundary.compute_arc_length_circle(B.Ypart(B.Ypart>=ya & B.Ypart<=yb),obj.Boundaries_list{ib});
+    else
+        % Assuming no angle, and so forth, the next one that reads this
+        % code has the task to introduce this functionality. 
+        B.Length_along(B.Ypart>=ya & B.Ypart<=yb) = B.Ypart(B.Ypart>=ya & B.Ypart<=yb) - ya;
+    end
     if strcmp(obj.theta{2},'none')
         theta = abs(obj.theta{1}(1));
         [obj,A.Phase,A.Temp] = obj.find_slab_(B,'Slab',A.Phase,A.Temp,obj.Boundaries_list{ib},theta); % Since the correction for the phase and temperature is inevitably connected to the mid plane, i use this function to correct this array
