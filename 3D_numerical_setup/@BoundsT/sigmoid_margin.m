@@ -20,9 +20,10 @@ elseif strcmp(Boundary,'C')
 elseif strcmp(Boundary,'D')
     D = obj.D{3};
     coord  = obj.D{1};
-    xa = coord(1);
+    xab = [coord(1),coord(3)];
+    xa = min(xab);
+    xb = max(xab);
     ya = coord(4);
-    xb = coord(3);%[x0,K1,K2,B,v]
     K1 = D(2)-ya;
     K2 = D(3)-ya;
     x0 = D(1);
@@ -31,6 +32,6 @@ elseif strcmp(Boundary,'D')
 
 end
 y  = K1+(K2-K1)./(1+exp(-b*(x-x0))).^(1/v);
-y(x>=xa & x<=xb) = nan; 
+y(x<xa & x>xb) = nan; 
 end
 

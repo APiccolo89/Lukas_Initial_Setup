@@ -37,11 +37,14 @@ if strcmp(data_boundary{2},'Circular')|| strcmp(data_boundary{2},'Sigmoid')
     % The main boundary is the coordinate that has the same value in
     % data_boundary.
     if rem(loc1,2)==0
-        ya = data_boundary{1}(1);
-        yb = data_boundary{1}(3);
+        yab = [data_boundary{1}(1),data_boundary{1}(3)];
+        ya = min(yab);
+        yb = max(yab);
     else
-        ya = data_boundary{1}(2);
-        yb = data_boundary{1}(4);
+        yab = [data_boundary{1}(2),data_boundary{1}(4)];
+        ya = min(yab);
+        yb = max(yab);
+
     end
     if strcmp(Boundary,'A')||strcmp(Boundary,'B') % in case of A and B, you need to increase the coordinate
         dx = +dx;
@@ -59,7 +62,7 @@ else
         yb = max(yab);
 
     else
-        yab = [data_boundary{1}(1),data_boundary{1}(3)];
+        yab = [data_boundary{1}(2),data_boundary{1}(4)];
         ya = min(yab);
         yb = max(yab);
     end
