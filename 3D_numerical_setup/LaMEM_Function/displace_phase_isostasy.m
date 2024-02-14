@@ -1,5 +1,5 @@
 
-function [A] = displace_phase_isostasy(ph,A,Gr,TI,OBG_st)
+function [A] = displace_phase_isostasy(ph,A,Gr,TI,OBG_st,wsx,wsy)
 % =========================================================================
 % Function that compute the relative displacement of the phase if we
 % consider them in Isostatic equilibrium.
@@ -38,11 +38,14 @@ y  = squeeze(A.Ypart(:,:,1));
 % My bad and ignorance: I apply moving average along x, and y, with a
 % number of nodes that grossly is equivalent to 200 km (two times more or
 % less a typical slab).
-
+if isempty(wsx)
+    wsx = 100;
+    wsy = 100; 
+end
 dx = diff(x(:,1));
 dy = diff(y(1,:));
-dx_MV = floor(100./mean(dx));
-dy_MV = floor(100./mean(dy));
+dx_MV = floor(wsx./mean(dx));
+dy_MV = floor(wsy./mean(dy));
 topo_M = movmean(topo,dx_MV,2);
 topo_M = movmean(topo_M,dy_MV,1);
 % Substract the median of the topography:

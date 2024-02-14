@@ -1,4 +1,4 @@
-function Create_Setup(Terranes,ph,TI,A,npart,Gr,Parallel_partition,Save_Test_Benchmark)
+function Create_Setup(Terranes,ph,TI,A,npart,Gr,Parallel_partition,Save_Test_Benchmark,wsx,wsy)
 %=========================================================================
 % Benchmark {Since waiting for 30 minutes everytime I fucked up something,
 % I will save A,ph,Gr, in benchmark3D.m}
@@ -65,7 +65,7 @@ else
     B_time = cputime; 
     disp(['Benchmark3D took',num2str(B_time-A_time,3) ,' s, to load']); 
 end
-[A] = displace_phase_isostasy(ph,A,Gr,TI,Terranes.Ocean_BG.Stratigraphy);
+[A] = displace_phase_isostasy(ph,A,Gr,TI,Terranes.Ocean_BG.Stratigraphy,wsx,wsy);
 
 
 A.Phase(A.Phase==0) = 12;
