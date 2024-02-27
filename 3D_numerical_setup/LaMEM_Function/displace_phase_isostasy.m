@@ -40,7 +40,7 @@ y  = squeeze(A.Ypart(:,:,1));
 % less a typical slab).
 if isempty(wsx)
     wsx = 100;
-    wsy = 100; 
+    wsy = 100;
 end
 dx = diff(x(:,1));
 dy = diff(y(1,:));
@@ -74,12 +74,14 @@ for i = 1:ilx
         Ph2(i,j,:)=interp1(z,squeeze(Ph(i,j,:)),squeeze(Z(i,j,:)),'nearest');
         T2(i,j,:)=interp1(z,squeeze(T(i,j,:)),squeeze(Z(i,j,:)),'nearest');
         % Fill the flysh
-        ind = (squeeze(Ph2(i,j,:))==OBG_st.phases(1) | squeeze(Ph2(i,j,:))==OBG_st.phases(2));
-        if isempty(ind(ind==1))
-            if topo_M(i,j)<=-1
-                ind2 =  squeeze(Z(i,j,:))>=topo_M(i,j) &  squeeze(Z(i,j,:))<=-1;
-                Ph2(i,j,ind2==1)=ph.Flysh1(1); 
-                topo_M(i,j) = -1; 
+        if TI.fill_flysh==1
+            ind = (squeeze(Ph2(i,j,:))==OBG_st.phases(1) | squeeze(Ph2(i,j,:))==OBG_st.phases(2));
+            if isempty(ind(ind==1))
+                if topo_M(i,j)<=-1
+                    ind2 =  squeeze(Z(i,j,:))>=topo_M(i,j) &  squeeze(Z(i,j,:))<=-1;
+                    Ph2(i,j,ind2==1)=ph.Flysh1(1);
+                    topo_M(i,j) = -1;
+                end
             end
         end
         z = [];
@@ -236,8 +238,8 @@ ax.YLabel.String = 'Y, [km]';
 ax.YLabel.Interpreter = 'latex';
 ax.ZLabel.String = 'H, [km]';
 ax.ZLabel.Interpreter = 'latex';
-ax.YLim = [-600, 600];
-ax.XLim = [-600,600];
+%ax.YLim = [-600, 600];
+%ax.XLim = [-600,600];
 colorbar;
 
 path_folder = 'Initial_Setup';
@@ -277,7 +279,7 @@ for i = 1:20:lx
     ax.YLabel.String = 'Z, [km]';
     ax.XLabel.Interpreter = 'latex';
     path_folder = 'Initial_Setup';
-    colorbar;    
+    colorbar;
     axis equal
 
     if ~isfolder(path_folder)
@@ -327,7 +329,7 @@ for i = 1:20:lx
     name_pic = (['Temp',num2str(it),'.png']);
     filename = fullfile(path_save,name_pic);
     print(filename,'-dpng')
-    close all; 
+    close all;
 
 
 

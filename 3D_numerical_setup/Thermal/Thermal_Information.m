@@ -9,6 +9,7 @@ classdef Thermal_Information
         kappa  
         Ph_Ast     
         Ph_Air
+        fill_flysh = 1;
     end
     
     methods

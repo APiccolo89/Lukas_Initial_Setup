@@ -13,7 +13,7 @@ v  = 1.0;
 
 %Boundary = C1+(C2-C1)./(1+exp(-gr*(x-0))).^(1/v);
 %Boundary2 = C1+(C2-C1)./(1+exp(-gr*(x-0))).^(1/v);
-Boundary3 = C1+(C2-C1)./(1+exp(-0.005*(x-0))).^(1/0.20);
+Boundary3 = C1+(C2-C1)./(1+exp(-0.018*(x-0))).^(1/0.01);
 
 
 figure(1)

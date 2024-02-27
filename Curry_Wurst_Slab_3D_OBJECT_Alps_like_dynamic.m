@@ -1,8 +1,10 @@
 
 clear all;
 close all;
-addpath matlab   %Here -> Folder2LaMEM/matlab => all the function that handle matlab files are there
-addpath(genpath('3D_numerical_setup'))
+addpath(genpath('../Lukas_Initial_Setup/matlab'))
+addpath(genpath('../Lukas_Initial_Setup/3D_numerical_setup'))
+addpath(genpath('../Lukas_Initial_Setup/inpoly-master'))
+
 npart = [3,3,3];
 % See model setup in Paraview 1-YES; 0-NO
 Paraview_output        = 1;
@@ -23,15 +25,17 @@ phases.Ph_Clt2 = [4,3300] ;
 phases.Ph_UM  = [5,3300]  ;% Upper Mantle
 phases.Ph_OLt = [6,3300] ;% Ocean Lithosphere
 phases.Ph_OC  = [7,3300]   ;%place holder
-phases.Ph_sed_oc = [8,2700];
+phases.Ph_sed_oc = [8,2680];
 phases.Ph_WZ  = [9,3300]  ;% Weak Zone
-phases.Ph_LC2  = [10,2700]  ;
-phases.Ph_UC2  = [11,2800] ;
+phases.Ph_LC2  = [10,2800]  ;
+phases.Ph_UC2  = [11,2700] ;
 phases.Ph_cont_pr = [12,2700];
 phases.Ph_pas_m = [13,2700];
 phases.Ph_OLt2 = [14,3300] ;% Ocean Lithosphere
 phases.Ph_OC2  = [15,3300]   ;%place holder
-phases.Ph_cont_pr2  = [16,2800]   ;%place holder
+phases.Ph_cont_pr2  = [16,2950]   ;%place holder
+phases.Flysh1  = [17,2600]   ;%place holder
+
 
 
 
@@ -51,22 +55,34 @@ continental_stratigraphy2.Tk     = [0.0,-15.0,-30.0,-100.0];
 continental_stratigraphy_s.phases =[phases.Ph_pas_m(1),phases.Ph_UC(1),phases.Ph_LC(1),phases.Ph_Clt(1)];
 continental_stratigraphy_s.Tk     = [0.0,-12.0,-15.0,-30.0,-100.0];
 
+% Pushing buffer terranes
+
 % Boundaries
 Lx = max(Gr.x_g)-min(Gr.x_g);
 Wy = max(Gr.y_g)-min(Gr.y_g); 
 BG = BoundsT;
 BG.c = [0.0,0.0]; 
-BG.W = Wy; 
+BG.W = Wy-100; 
 BG.L = Lx; 
 BG = BG.compute_coordinate_boundary_composite; 
 %North Continent 
 
+% Boundaries
+Lx = max(Gr.x_g)-min(Gr.x_g);
+Wy = max(Gr.y_g)-min(Gr.y_g); 
+OG = BoundsT;
+OG.c = [0.0,-50.0]; 
+OG.W = 400.0; 
+OG.L = Lx; 
+OG = OG.compute_coordinate_boundary_composite; 
+%North Continent 
+
 %South Continent 
 C2 = BoundsT; 
-C2.c = [0.0,-500];
-C2.W = 1000.0;
-C2.L = 1000.0;
-C2=C2.Create_arc_circumference_margin(400,'B',1200);
+C2.c = [0.0,-550];
+C2.W = 600.0;
+C2.L = 700.0;
+C2=C2.compute_coordinate_boundary_composite;
 
 % = North Continent with composite D Boundary
 C1 = BoundsT;
@@ -74,6 +90,7 @@ C1.c = [0.0, Wy/4];
 C1.W = Wy/2;
 C1.L = Lx;
 C1=C1.compute_coordinate_boundary_composite;
+C1=C1.Create_Sigmoid_margin('D',0.0,0.008,0.25,-100,100);
 % Trench => ~ night mare, but let's try
 % Rift background oceanic terranes
 
@@ -83,12 +100,12 @@ C1=C1.compute_coordinate_boundary_composite;
 %==========================================================================
 
 Thermal_TypeTrench = Thermal_Type;
-Thermal_TypeTrench.Age = convert_Age_velocity(30,1); 
-Thermal_TypeTrench.vel = {[convert_Age_velocity(3,2),convert_Age_velocity(10,2)],'linear'}; 
+Thermal_TypeTrench.Age = convert_Age_velocity(80,1); 
+Thermal_TypeTrench.vel = {[convert_Age_velocity(1.5,2),convert_Age_velocity(1.5,2)],'none'}; 
 Thermal_TypeTrench.Type = 'McKenzie';
 %
 Thermal_TypeOcean = Thermal_Type;
-Thermal_TypeOcean.Age = convert_Age_velocity(30,1); 
+Thermal_TypeOcean.Age = convert_Age_velocity(80,1); 
 Thermal_TypeOcean.Type = 'HalfSpace';
 % 
 Thermal_TypeContinent = Thermal_Type; 
@@ -104,6 +121,7 @@ Thermal_information.TS = 20;
 Thermal_information=Thermal_information.kappa_calculation; 
 Thermal_information.Ph_Air = 0; 
 Thermal_information.Ph_Ast = 5; 
+Thermal_information.fill_flysh = 0; 
 %==========================================================================
 % Geological object: Terrane, Trench {To Do Ridge}
 % Terrane and Trench are the two major classes, Passive margin is a class
@@ -111,6 +129,7 @@ Thermal_information.Ph_Ast = 5;
 % 
 %==========================================================================
 Ocean_BG       = Terrane; 
+Ocean_OG       = Terrane; 
 Continent1     = Terrane;
 Continent2     = Terrane;
 T = Trench; 
@@ -123,7 +142,7 @@ passive_margin2 = Passive_Margin; % To apply to continent 1
 %==========================================================================
 passive_margin1.Direction = 'right';
 passive_margin1.ph_pas_m  = phases.Ph_pas_m(1);
-passive_margin1.shape     = 'rectangular'; 
+passive_margin1.shape     = 'triangular'; 
 passive_margin1.Thermal_type_O = Thermal_TypeTrench;
 passive_margin1.Thermal_type_C = Thermal_TypeContinent; 
 passive_margin1.Stratigraphy= continental_stratigraphy;
@@ -151,36 +170,42 @@ Continent2.Boundary = C2;
 Continent2.Stratigraphy=continental_stratigraphy2; 
 Continent2.Thermal_type = Thermal_TypeContinent; 
 Continent2.Thermal_information = Thermal_information; 
-Continent2.Passive_Margin = passive_margin2; 
+%Continent2.Passive_Margin = passive_margin2; 
 %==========================================================================
 Ocean_BG.name = 'Ocean Background';
 Ocean_BG.Boundary = BG; 
 Ocean_BG.Stratigraphy = oceanic_stratigraphy2;
 Ocean_BG.Thermal_information = Thermal_information;
 Ocean_BG.Thermal_type = Thermal_TypeOcean;
+%======================================================
+Ocean_OG = Ocean_BG;
+Ocean_OG.name = 'Ocean between';
+Ocean_OG.Boundary = OG; 
+Ocean_OG.Stratigraphy = oceanic_stratigraphy;
 %==========================================================================
-T.Boundary = C2;
-T.Boundaries_list = {'B'}; 
+T.Boundary = OG;
+T.Boundaries_list = {'D'}; 
 T.Stratigraphy_Continental = continental_stratigraphy_s;
 T.Stratigraphy_Oceanic = oceanic_stratigraphy;
 T.theta = {[-90,-90],'none'};
 T.D0   = 100; 
-T.L0   = 600; 
+T.L0   = 200; 
+T.Lb   = 150; % Bending lenght 
 T.Decoupling_depth = -100; 
 T.Thermal_type = Thermal_TypeTrench;
 T.Thermal_information = Thermal_information; 
 T.R = [120-T.D0, 120]; 
 T.Type_Subduction = 'Mode_2'; 
-T.Type_Angle       = 'ribe';
-T.nseg             = 30; 
-T.tk_WZ = 60.0; 
+T.Type_Angle = 'ribe';
+T.nseg = 40;
+T.tk_WZ = 20.0; 
 T.ph_WZ = phases.Ph_WZ(1);
-T.Subducted_crust_L = [0.0,0.0,0.0,-80.0,50.0,0.0];
+T.Subducted_crust_L =[]; %[0.0,0.0,0.0,-100.0,50.0,0.0];
 %                     x1   z1
 T.phase_prism = {phases.Ph_cont_pr(1),phases.Ph_cont_pr2(1)};
 T.position_end_prism = 80; 
-T.length_continent = {[150,20],'linear'};
-T.prism_depth = -70; 
+T.length_continent = {[0,0],'none'};
+T.prism_depth = -40; 
 
 %==========================================================================
 % Filling the Terrane structure:=> The order is important as the phase will
@@ -192,10 +217,12 @@ T.prism_depth = -70;
 % thickness? 
 % Proper continental lithosphere geotherm. 
 %==========================================================================
-Terranes = struct('Ocean_BG',Ocean_BG,'Continent1',Continent1,'Continent2',Continent2,'Trench',T);%,'T',T);
+Terranes = struct('Ocean_BG',Ocean_BG,'Ocean_OG',Ocean_OG,'Continent1',Continent1,'Continent2',Continent2,'Trench',T);%,'T',T);
 %==========================================================================
 TA = cputime; 
-Create_Setup(Terranes,phases,Thermal_information,A,npart,Gr,Parallel_partition,0);
+wsx=20;
+wsy=20;
+Create_Setup(Terranes,phases,Thermal_information,A,npart,Gr,Parallel_partition,1,wsx,wsy);
 TB = cputime;
 disp('====================================================================')
 disp(['The Setup is finished and took ', num2str(round((TB-TA)./60)), ' min'])

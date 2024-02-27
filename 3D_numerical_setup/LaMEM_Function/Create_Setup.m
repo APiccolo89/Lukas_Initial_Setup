@@ -68,7 +68,7 @@ end
 [A] = displace_phase_isostasy(ph,A,Gr,TI,Terranes.Ocean_BG.Stratigraphy,wsx,wsy);
 
 
-A.Phase(A.Phase==0) = 12;
+%A.Phase(A.Phase==0) = 12;
 
 
 A.RandomNoise = logical(0);
